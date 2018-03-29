@@ -1,0 +1,2 @@
+# newbie
+my first codes
