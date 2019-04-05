@@ -5,28 +5,10 @@ const int MAXN = 101010;
 
 int st[4*MAXN];
 int v[MAXN];
+int lazy[4*MAXN];
 
-
-//at == where Im at
-//d == destination to be updated
-//x == updating element
-
-void lazyprop (int at, int l, int r){
+void build(int at, int l, int r){
 	
-	if(!lazyv[at]) return; //no updates to be done
-	
-	st[at] += lazyv[at]; //updating
-	
-	if(l != r){ //if the update is within a range
-				//must propagate it to children nodes
-		lazyv[at<<1] += lazyv[at];
-		lazyv[(at<<1) + 1] += lazyv[at];
-	}
-	
-	lazyv[at] = 0; //updated
-}
-
-void build (int at, int l, int r){
 	if(l == r){
 		st[at] = v[l];
 		return;
@@ -34,47 +16,74 @@ void build (int at, int l, int r){
 	
 	int mid = (l + r)>>1;
 	
-	build (at<<1, l, mid);
-	build ((at<<1) + 1, mid + 1, r);
+	build((at<<1), l, mid);
+	build((at<<1) + 1, mid + 1, r);
 	
 	st[at] = st[at<<1] + st[(at<<1) + 1];
 }
 
-void update (int at, int l, int r, int d, int x){
+//node "at" comprehends interval [l , r]
+//updating interval [lu, ru] with val "x"
+
+void update(int at, int l, int r, int lu, int ru, int x){
 	
-	lazyprop (at, l, r);
+	if(lazy[at]){
+		
+		st[at] += (r - l + 1) * lazy[at]; //updates node with lazy array value
+		
+		if(l != r){ // spread lazyness to children
+			lazy[at<<1] += lazy[at];
+			lazy[(at<<1) + 1] += lazy[at];
+		}
+		
+		lazy[at] = 0;
+	}
 	
-	if(pos < l || pos > r) return;
+	if(r < lu || l > ru) return;
 	
-	if(l == r){
-		st[at] = x;
-		return ;
+	if(lu <= l && r <= ru){
+		
+		st[at] += (r - l + 1) * x; // updates node
+		
+		if(l != r){ // updates children's lazyness
+			lazy[at<<1] += x;
+			lazy[(at<<1) + 1] += x;
+		}
+		
+		return;
+		
 	}
 	
 	int mid = (l + r)>>1;
 	
-	if(d <= mid)
-		update(at<<1, l, mid, d, x);
-	else
-		update((at<<1) + 1, mid + 1, r, d, x);
+	update((at<<1), l, mid, lu, ru, x);
+	update((at<<1) + 1, mid + 1, r, lu, ru, x);
 	
 	st[at] = st[at<<1] + st[(at<<1) + 1];
 }
 
-// [ll , rr] == search
-// [l , r] == am at
+//node "at" comprehends interval [l , r]
+//querying interval [lq , rq]
 
-int query (int at, int l, int r, int ll, int rr){
+int query(int at, int l, int r, int lq, int rq){
 	
-	lazyprop (at, l, r);
+	if(lazy[at]){
+		
+		st[at] += (r - l + 1) * lazy[at]; // update lazy array
+		
+		if(l != r){ // spread lazyness to children
+			st[at<<1] += lazy[at];
+			st[(at<<1) + 1] += lazy[at];
+		}
+		
+		lazy[at] = 0;
+	}
 	
-	if(rr < l || r < ll) return 0;
-	if(l <= ll && rr <= r) return st[at];
+	if(r < lq || l > rq) return 0;
+	
+	if(lq <= l && r <= rq) return st[at]; //we can return immediately if updated
 	
 	int mid = (l + r)>>1;
 	
-	int lq =  query (at<<1, l, mid, ll, rr) 
-	int rq = query ((at<<1) + 1, mid + 1, r, ll, rr);
-	
-	return lq + rq;
+	return query((at<<1), l, mid, lq, rq) + query((at<<1) + 1, mid + 1, r, lq, rq);
 }
