@@ -10,8 +10,8 @@ stack<int>st;
 int scc;
 int id[2020];
 
-// get topological ordering of nodes
-// and goes through it on the reverse graph
+// get topological ordering of nodes and
+// goes through it on the reverse graph
 
 void dfs(int x){
 	
