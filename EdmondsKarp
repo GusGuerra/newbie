@@ -14,6 +14,7 @@ const int TAR = 499;
 
 int pai[MAXN];
 int fluxo[MAXN][MAXN];
+vector<int>g[MAXN];
 
 bool bfs(){
 	
