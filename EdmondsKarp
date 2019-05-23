@@ -1,0 +1,72 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MAXN = 500;
+
+const int SRC = 0;
+const int TAR = 499;
+
+#define INF 0x3f3f3f3f
+#define pb push_back
+#define mp make_pair
+#define f first
+#define s second
+
+int pai[MAXN];
+int fluxo[MAXN][MAXN];
+
+bool bfs(){
+	
+	memset(pai,-1,sizeof pai);
+	pai[SRC] = -2;
+	
+	queue<int>q;
+	q.push(SRC);
+	
+	while(!q.empty()){
+	
+		int u = q.front();
+		q.pop();
+	
+		for(int i = 0 ; i < g[u].size() ; i ++){
+			
+			int w = g[u][i];
+			
+			if(pai[w] == -1 && fuxo[u][w]){
+				pai[w] = u;
+				if(w == TAR) return true;
+				q.push(w);
+			}
+		}
+	}
+	
+	return false;
+}
+
+int max_flow(){
+	
+	int total = 0;
+	
+	while(bfs()){
+		
+		int x = TAR;
+		int f = INF;
+		
+		while(x != SRC){
+			f = min(fluxo[pai[x]][x] , f);
+			x = pai[x];
+		}
+		
+		x = TAR;
+		
+		while(x != SRC){
+			fluxo[pai[x]][x] -= f;
+			fluxo[x][pai[x]] += f;
+			x = pai[x];
+		}
+		
+		total += f;
+	}
+	
+	return total;
+}
